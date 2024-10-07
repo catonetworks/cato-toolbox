@@ -1,8 +1,4 @@
-# cato-toolbox
-
-Example scripts, reference code and helper utilities for building automated flows using Cato GraphQL API.
-
-## eventsFeed.py
+# eventsFeed.py
 
 An example of how to use the eventsFeed() API to extract events from Cato. 
 The eventsFeed Python script is an example of how to use the eventsFeed() API to extract events from the Cato SASE Cloud Platform, retrieves and processes event data, and outputs it in multiple configurable formats. It supports customizable filters, real-time or scheduled processing, and offers logging for error handling.
