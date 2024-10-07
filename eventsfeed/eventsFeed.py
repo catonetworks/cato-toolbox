@@ -108,7 +108,8 @@ def send(query):
     headers = {
         'x-api-key': args.api_key,
         'Content-Type':'application/json',
-        'Accept-Encoding':'gzip, deflate, br'
+        'Accept-Encoding':'gzip, deflate, br',
+        'User-Agent': 'eventsFeed.py'
     }
     no_verify = ssl._create_unverified_context()
     while True:
