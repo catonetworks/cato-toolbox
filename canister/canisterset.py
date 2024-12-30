@@ -23,6 +23,7 @@ DEFAULT = [
 		"protocol": "http",
 		"host": "www.sex.com",
 		"path": "/",
+		"success_criteria": [{"field":"response_code","op":"is","value":403}],
 	}
 ]
 
@@ -84,7 +85,8 @@ class CanisterSet:
 				new_test = CanisterTest(item)
 			except Exception as e:
 				errors.append(f'{i}:{e}')
-			self.tests.append(new_test)
+			else:
+				self.tests.append(new_test)
 		if len(errors) > 0:
 			self.tests = []
 		return errors
