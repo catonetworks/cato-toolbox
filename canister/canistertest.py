@@ -59,7 +59,7 @@ mandatory_parameters = [
 #
 # Define the supported protocols and methods
 #
-supported_protocols = ["http"]
+supported_protocols = ["http", "https"]
 supported_methods = ["GET"]
 
 

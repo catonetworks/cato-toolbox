@@ -41,7 +41,7 @@ class TestSet(unittest.TestCase):
         S = CanisterSet()
         errors = S.load(DEFAULT)
         self.assertEqual(len(errors), 0)
-        self.assertEqual(len(S), 1)
+        self.assertEqual(len(S), 2)
 
 
     def test_execute(self):

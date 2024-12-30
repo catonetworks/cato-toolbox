@@ -24,7 +24,7 @@ class TestCatcherContent(unittest.TestCase):
         #
         # Call setUp as a class method to provide a single standup.
         #
-        cls.http_service = Catcher(port=8080, enable_ssl=False)
+        cls.http_service = Catcher()
         cls.http_service.start()
 
 
@@ -32,8 +32,16 @@ class TestCatcherContent(unittest.TestCase):
         #
         # Test a GET request.
         #
-        code, reason, headers, body = net_http.request("http://127.0.0.1:8080")
+        code, reason, headers, body = net_http.request("https://127.0.0.1:8443")
         self.assertEqual(code, 200)
+
+    def test_eicar(self):
+        #
+        # Test a GET request.
+        #
+        code, reason, headers, body = net_http.request("https://127.0.0.1:8443/eicar.exe")
+        self.assertEqual(code, 200)
+        self.assertTrue("EICAR-STANDARD-ANTIVIRUS-TEST-FILE" in body)
 
 
     @classmethod

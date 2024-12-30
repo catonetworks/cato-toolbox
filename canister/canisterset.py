@@ -10,24 +10,6 @@ from logger import Logger
 from canistertest import CanisterTest
 
 
-#
-# Define a default set
-#
-DEFAULT = [
-	{
-		"name": "Porn Site",
-		"feature": "Internet Firewall",
-		"description": "Access to adult websites",
-		"remediation": "This access can be blocked by the Cato Internet Firewall.",
-		"method": "GET",
-		"protocol": "http",
-		"host": "www.sex.com",
-		"path": "/",
-		"success_criteria": [{"field":"response_code","op":"is","value":403}],
-	}
-]
-
-
 class CanisterSet:
 	#
 	# Defines a set of tests.
@@ -86,10 +68,22 @@ class CanisterSet:
 			except Exception as e:
 				errors.append(f'{i}:{e}')
 			else:
+
+				#
+				# Substitute target for host==None
+				#
+				if item["host"] is None:
+					new_test.host = self.target
+
+				#
+				# Add to set
+				#
 				self.tests.append(new_test)
+
 		if len(errors) > 0:
 			self.tests = []
 		return errors
+
 
 
 	def execute(self):
@@ -99,3 +93,34 @@ class CanisterSet:
 		#
 		for ct in self.tests:
 			ct.execute()
+
+
+
+#
+# Define a default set
+#
+DEFAULT = [
+	{
+		"name": "Porn Site",
+		"feature": "Internet Firewall",
+		"description": "Access to adult websites",
+		"remediation": "This access can be blocked by the Cato Internet Firewall.",
+		"method": "GET",
+		"protocol": "https",
+		"host": "www.sex.com",
+		"path": "/",
+		"success_criteria": [{"field":"response_code","op":"is","value":403}],
+	},
+	{
+		"name": "EICAR",
+		"feature": "Anti Malware",
+		"description": "Download of an EICAR test file",
+		"remediation": "Infected file downloads can be blocked by Cato Anti Malware.",
+		"method": "GET",
+		"protocol": "https",
+		"host": None,
+		"path": "/eicar.exe",
+		"success_criteria": [{"field":"response_code","op":"is","value":403}],
+	},
+]
+

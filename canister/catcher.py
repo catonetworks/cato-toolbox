@@ -6,7 +6,7 @@
 # a 200 OK, and echo the request headers and body back in the response.
 #
 
-
+import base64
 import http.server
 import socketserver
 import ssl
@@ -24,15 +24,29 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
 
 
     def do_GET(self):
+
+        #
+        # EICAR file
+        #
+        if self.path == "/eicar.exe":
+            eicarb64 = "WDVPIVAlQEFQWzRcUFpYNTQoUF4pN0NDKTd9JEVJQ0FSLVNUQU5EQVJELUFOVElWSVJVUy1URVNULUZJTEUhJEgrSCo="
+            self.send_response(200)
+            self.send_header("Content-Type", "application/octet-stream")
+            self.send_header("Content-Disposition", "attachment; filename=\"eicar.exe\"")
+            self.end_headers()
+            self.wfile.write(base64.b64decode(eicarb64))
+
+
         #
         # Default GET: ignore the body, only send back the request headers.
         #
-        self.send_response(200)
-        self.send_header("Content-type", "text/plain")
-        self.end_headers()
-        self.wfile.write(f'{self.requestline}\n'.encode())
-        for header, value in self.headers.items():
-            self.wfile.write(f"{header}: {value}\n".encode())
+        else:
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(f'{self.requestline}\n'.encode())
+            for header, value in self.headers.items():
+                self.wfile.write(f"{header}: {value}\n".encode())
 
 
     """
@@ -90,10 +104,10 @@ class Catcher:
         def go():
             with socketserver.TCPServer((self.host, self.port), RequestHandler) as self.httpd:
                 if self.enable_ssl:
-                    self.httpd.socket = ssl.wrap_socket(
+                    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+                    context.load_cert_chain(self.certfile, self.keyfile)
+                    self.httpd.socket = context.wrap_socket(
                         self.httpd.socket,
-                        certfile=self.certfile,
-                        keyfile=self.keyfile,
                         server_side=True
                     )
                     protocol = "https"
