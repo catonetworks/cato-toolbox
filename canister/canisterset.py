@@ -91,3 +91,11 @@ class CanisterSet:
 			self.tests = []
 		return errors
 
+
+	def execute(self):
+		#
+		# Execute the loaded set by iterating over each test,
+		# calling the test's execute() method.
+		#
+		for ct in self.tests:
+			ct.execute()

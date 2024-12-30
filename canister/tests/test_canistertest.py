@@ -21,16 +21,16 @@ porn_test = {
     "success_criteria": [{"field":"response_code","op":"is","value":403}],
 }
 
-cato_test = {
-    "name": "Cato Networks website",
+google_test = {
+    "name": "Google",
     "feature": "Internet Firewall",
-    "description": "Access to Cato Networks website",
+    "description": "Access to Google website",
     "remediation": "This access can be blocked by the Cato Internet Firewall.",
     "method": "GET",
     "protocol": "http",
-    "host": "www.catonetworks.com",
+    "host": "google.com",
     "path": "/",
-    "success_criteria": [{"field":"response_code","op":"is","value":403}],
+    "success_criteria": [{"field":"response_code","op":"is","value":200}],
 }
 
 
@@ -124,11 +124,11 @@ class TestCanisterTest(unittest.TestCase):
         #
         # Execute - Cato not blocked
         #
-        T = CanisterTest(cato_test)
+        T = CanisterTest(google_test)
         T.execute()
         self.assertTrue(T.executed)
-        self.assertFalse(T.success)
-        self.assertEqual(len(T.reasons), 1)
+        self.assertTrue(T.success)
+        self.assertEqual(len(T.reasons), 0)
 
 
     def test_evaluation(self):
