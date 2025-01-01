@@ -16,9 +16,20 @@ class CanisterSet:
 	#
 
 
-	def __init__(self, target="127.0.0.1"):
+
+	def __init__(self, target="127.0.0.1", port=8443):
+		#
+		# Parameters:
+		# ----------
+		#
+		# target: the IP or hostname of a target host, for use
+		#         in tests which require a co-operative target service.
+		#
+		# port: the port the target is listening on.
+		#
 		self.tests = []
 		self.target = target
+		self.port = port
 
 	def __len__(self):
 		return len(self.tests)
@@ -78,6 +89,12 @@ class CanisterSet:
 				#
 				if item["host"] is None:
 					new_test.host = self.target
+
+				#
+				# Substitute target for port==None
+				#
+				if item["port"] is None:
+					new_test.port = self.port
 
 				#
 				# Add to set
@@ -140,6 +157,7 @@ DEFAULT = [
 		"method": "GET",
 		"protocol": "https",
 		"host": "www.sex.com",
+		"port": 443,
 		"path": "/",
 		"success_criteria": [{"field":"response_code","op":"is","value":403}],
 	},
@@ -151,6 +169,7 @@ DEFAULT = [
 		"method": "GET",
 		"protocol": "https",
 		"host": None,
+		"port": None,
 		"path": "/eicar.exe",
 		"success_criteria": [{"field":"response_code","op":"is","value":403}],
 	},
@@ -162,6 +181,7 @@ DEFAULT = [
 	    "method": "GET",
 	    "protocol": "http",
 	    "host": "google.com",
+	    "port": 80,
 	    "path": "/",
 	    "success_criteria": [{"field":"response_code","op":"is","value":200}],
 	},

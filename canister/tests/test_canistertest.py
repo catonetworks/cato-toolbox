@@ -19,6 +19,7 @@ porn_test = {
     "method": "GET",
     "protocol": "http",
     "host": "www.sex.com",
+    "port": 80,
     "path": "/",
     "success_criteria": [{"field":"response_code","op":"is","value":403}],
 }
@@ -31,6 +32,7 @@ google_test = {
     "method": "GET",
     "protocol": "http",
     "host": "google.com",
+    "port": 80,
     "path": "/",
     "success_criteria": [{"field":"response_code","op":"is","value":200}],
 }

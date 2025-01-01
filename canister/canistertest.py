@@ -31,15 +31,20 @@ mandatory_parameters = [
 	#
 	"remediation",
 	#
+	# The protocol (http...). Also defines if the test is to be
+	# conducted via TLS.
+	#
+	"protocol",
+	#
 	# The target host. If None, the containing Set will insert the
 	# defined target host.
 	#
 	"host",
 	#
-	# The protocol (http...). Also defines if the test is to be
-	# conducted via TLS.
+	# The port for the test. If None, the containing set will insert
+	# its defined target port.
 	#
-	"protocol",
+	"port",
 	#
 	# The path for the test.
 	#
@@ -149,6 +154,7 @@ class CanisterTest:
 		self.remediation = params["remediation"]
 		self.host = params["host"]
 		self.path = params["path"]
+		self.port = params["port"]
 		self.success_criteria = params["success_criteria"]
 		self.executed = False
 		self.success = None
@@ -183,7 +189,7 @@ class CanisterTest:
 			#
 			# Construct request
 			#
-			url = f'{self.protocol}://{self.host}{self.path}'
+			url = f'{self.protocol}://{self.host}:{self.port}{self.path}'
 			Logger.log(3, f'Test:{self.name} url={url}')
 
 			#

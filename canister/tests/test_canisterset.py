@@ -4,6 +4,7 @@
 # Tests the Canister set class.
 #
 
+import os
 import unittest
 
 from canisterset import CanisterSet, DEFAULT
