@@ -7,6 +7,8 @@
 import unittest
 
 from canistertest import CanisterTest, mandatory_parameters, supported_protocols, supported_methods, evaluate
+from logger import Logger
+Logger.print_output = False
 
 
 porn_test = {

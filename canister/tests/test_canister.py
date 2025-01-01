@@ -7,7 +7,8 @@
 import canister
 import unittest
 
-
+from logger import Logger
+Logger.print_output = False
 
 class InitTests(unittest.TestCase):
 

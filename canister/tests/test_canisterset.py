@@ -7,6 +7,8 @@
 import unittest
 
 from canisterset import CanisterSet, DEFAULT
+from logger import Logger
+Logger.print_output = False
 
 
 

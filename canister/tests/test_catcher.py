@@ -9,6 +9,8 @@ import unittest
 
 import net_http
 from catcher import Catcher
+from logger import Logger
+Logger.print_output = False
 
 
 
