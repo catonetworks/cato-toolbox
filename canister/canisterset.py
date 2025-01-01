@@ -55,7 +55,9 @@ class CanisterSet:
 		# Check the object is a list
 		#
 		if type(obj) != list:
-			errors.append(f'Input object should be a list, not {type(obj)}')
+			error = f'Input object should be a list, not {type(obj)}'
+			Logger.log(1, error)
+			errors.append(error)
 			return errors
 
 		#
@@ -66,7 +68,9 @@ class CanisterSet:
 			try:
 				new_test = CanisterTest(item)
 			except Exception as e:
-				errors.append(f'{i}:{e}')
+				error = f'{i}:{e}'
+				Logger.log(1, error)
+				errors.append(error)
 			else:
 
 				#
@@ -91,8 +95,36 @@ class CanisterSet:
 		# Execute the loaded set by iterating over each test,
 		# calling the test's execute() method.
 		#
+		Logger.log(1, f'CanisterSet:execute()')
 		for ct in self.tests:
 			ct.execute()
+
+
+
+	def results(self):
+		#
+		# Return a dictionary of total, succeeded, failed, unexecuted counts.
+		#
+		# Call this after execute() to receive a summary of results.
+		#
+		succeeded = 0
+		failed = 0
+		unexecuted = 0
+		total = 0
+		for ct in self.tests:
+			total += 1
+			if not ct.executed:
+				unexecuted += 1
+			elif ct.success:
+				succeeded += 1
+			else:
+				failed += 1
+		return {
+			"total":total, 
+			"succeeded":succeeded, 
+			"failed":failed, 
+			"unexecuted":unexecuted
+		}
 
 
 
@@ -121,6 +153,17 @@ DEFAULT = [
 		"host": None,
 		"path": "/eicar.exe",
 		"success_criteria": [{"field":"response_code","op":"is","value":403}],
+	},
+	{
+	    "name": "Google",
+	    "feature": "Internet Firewall",
+	    "description": "Access to Google website should be allowed.",
+	    "remediation": "This access should not be blocked by the Cato Internet Firewall.",
+	    "method": "GET",
+	    "protocol": "http",
+	    "host": "google.com",
+	    "path": "/",
+	    "success_criteria": [{"field":"response_code","op":"is","value":200}],
 	},
 ]
 

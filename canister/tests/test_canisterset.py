@@ -41,12 +41,19 @@ class TestSet(unittest.TestCase):
         S = CanisterSet()
         errors = S.load(DEFAULT)
         self.assertEqual(len(errors), 0)
-        self.assertEqual(len(S), 2)
+        self.assertTrue(len(S) > 2)
 
 
     def test_execute(self):
         S = CanisterSet()
         errors = S.load(DEFAULT)
         self.assertEqual(len(errors), 0)
-        self.assertTrue(len(S) > 0)
+        test_count = len(S)
+        self.assertTrue(test_count > 0)
         S.execute()
+        results = S.results()
+        self.assertEqual(results["unexecuted"], 0)
+        self.assertEqual(results["failed"], 0)
+        self.assertEqual(results["succeeded"], test_count)
+        self.assertEqual(results["total"], test_count)
+

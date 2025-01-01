@@ -56,19 +56,22 @@ def request(url, method="GET", headers={}, body=None):
 		response_reason = response.reason
 		response_headers = dict(response.headers)
 		response_body = response.read().decode("utf-8","replace")
+		return response_code, response_reason, response_headers, response_body
 	except urllib.error.HTTPError as he:
 		response_code = he.code
 		response_reason = he.reason
 		response_headers = dict(he.headers)
 		response_body = he.fp.read().decode("utf-8","replace")
+		return response_code, response_reason, response_headers, response_body
 	except urllib.error.URLError as ue:
 		response_code = None
 		response_reason = ue.reason
 		response_headers = {}
 		response_body = ""
+		return response_code, response_reason, response_headers, response_body
 	except Exception as e:
 		response_code = None
 		response_reason = f'{e}'
 		response_headers = {}
 		response_body = ""
-	return response_code, response_reason, response_headers, response_body
+		return response_code, response_reason, response_headers, response_body

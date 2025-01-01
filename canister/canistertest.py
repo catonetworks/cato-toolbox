@@ -95,32 +95,48 @@ class CanisterTest:
 		#
 		for parameter in mandatory_parameters:
 			if parameter not in params:
+				Logger.log(1, f'Test missing mandatory parameter: {parameter}')
 				raise KeyError(f'Test missing mandatory parameter: {parameter}')
+		Logger.log(2, f'Test:{params["name"]} loading')
 
 		#
 		# Check protocols and methods
 		#
 		if params["protocol"] not in supported_protocols:
-			raise ValueError(f'Unsupported protocol: {params["protocol"]}')
+			error = f'Test:{params["name"]} unsupported protocol: {params["protocol"]}'
+			Logger.log(1, error)
+			raise ValueError(error)
 		if params["method"] not in supported_methods:
-			raise ValueError(f'Unsupported method: {params["method"]}')
+			error = f'Test:{params["name"]} unsupported method: {params["method"]}'
+			Logger.log(1, error)
+			raise ValueError(error)
 
 		#
 		# Check success criteria
 		#
 		scs = params["success_criteria"]
 		if type(scs) != list:
-			raise TypeError(f'Success criteria should be a list, not {type(scs)}')
+			error = f'Test:{params["name"]} success criteria should be a list, not {type(scs)}'
+			Logger.log(1, error)
+			raise TypeError(error)
 		for sc in scs:
 			if type(sc) != dict:
-				raise TypeError(f'Each success criterion should be a dict, not {type(sc)}')
+				error = f'Test:{params["name"]} each success criterion must be a dict, not {type(sc)}'
+				Logger.log(1, error)
+				raise TypeError(error)
 			for item in sc.keys():
 				if item not in supported_sc_items:
-					raise KeyError(f'Unsupported item in success criteria: {item}')
+					error = f'Test:{params["name"]} unsupported item in success criteria: {item}'
+					Logger.log(1, error)
+					raise KeyError(error)
 			if sc["field"] not in supported_sc_fields:
-				raise ValueError(f'Unsupported success criteria field: {sc["field"]}')
+				error = f'Test:{params["name"]} unsupported success criteria field: {sc["field"]}'
+				Logger.log(1, error)
+				raise ValueError(error)
 			if sc["op"] not in supported_sc_ops:
-				raise ValueError(f'Unsupported success criteria op: {sc["op"]}')
+				error = f'Test:{params["name"]} unsupported success criteria op: {sc["op"]}'
+				Logger.log(1, error)
+				raise ValueError(error)
 
 		#
 		# Assign params
@@ -138,12 +154,19 @@ class CanisterTest:
 		self.success = None
 		self.reasons = None
 
+		#
+		# Log success
+		#
+		Logger.log(2, f'Test:{self.name} successful load')
+
 
 
 	def execute(self):
 		#
 		# The main test engine.
 		#
+		Logger.log(2, f'Test:{self.name} executing with {self.protocol}')
+
 
 		#
 		# Reset state
@@ -153,14 +176,15 @@ class CanisterTest:
 		self.executed = False
 
 		#
-		# http tests
+		# http/s tests
 		#
-		if self.protocol == "http":
+		if self.protocol in ["http", "https"]:
 
 			#
 			# Construct request
 			#
 			url = f'{self.protocol}://{self.host}{self.path}'
+			Logger.log(3, f'Test:{self.name} url={url}')
 
 			#
 			# Make request
@@ -169,10 +193,15 @@ class CanisterTest:
 				url,
 				self.method
 			)
+			Logger.log(3, f'Test:{self.name} response_code={response_code}')
+			Logger.log(3, f'Test:{self.name} response_reason={response_reason}')
+			Logger.log(4, f'Test:{self.name} response_headers={response_headers}')
+			Logger.log(4, f'Test:{self.name} response_body={response_body}')
 
 			#
 			# Evaluate result
 			#
+			Logger.log(2, f'Test:{self.name} evaluating response')
 			self.success, self.reasons = evaluate(
 				{
 					"response_code": response_code
@@ -180,7 +209,18 @@ class CanisterTest:
 				self.success_criteria
 			)
 			self.executed = True
+			Logger.log(2, f'Test:{self.name} success={self.success}')
+			Logger.log(3, f'Test:{self.name} reasons={self.reasons}')
 
+
+		else:
+
+			#
+			# Fatal error
+			#
+			error = f'Test:{self.name} FATAL no execution path for protocol={self.protocol}'
+			Logger.log(0, error)
+			raise ValueError(error)
 
 
 	def __str__(self):
@@ -236,6 +276,7 @@ def evaluate(results, scs):
 			#
 			if sc["op"] == "is":
 				if str(sc["value"]).lower() == str(results["response_code"]).lower():
+					reasons.append(f'response_code result {results["response_code"]} = success criteria {sc["value"]}')
 					successes += 1
 				else:
 					errors += 1
@@ -244,5 +285,5 @@ def evaluate(results, scs):
 	if errors > 0:
 		return False, reasons
 	if successes > 0:
-		return True, []
+		return True, reasons
 	return False, ["Indeterminate result"]
