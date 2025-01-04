@@ -10,7 +10,9 @@ import base64
 import http.server
 import socketserver
 import ssl
+import sys
 import threading
+import time
 
 from logger import Logger
 
@@ -127,4 +129,53 @@ class Catcher:
         if self.server_thread is not None:
             Logger.log(1, "Shutting down the server")
             self.httpd.shutdown()
+
+
+
+#
+# The main() function allows us to call this module from the command line
+# with no additional scripting required. The only parameters are the server
+# IP and port - when calling from the CLI we assume that TLs is required
+# and that the TLS certificate will be the default. We also leave the log
+# level at the default.
+#
+
+def main():
+    #
+    # Example command line would be:
+    # 
+    # python3 -m catcher <server_ip> <server_port>
+    #
+    # server_ip: the local IP to listen on.
+    # server_port: the port to listen on.
+    # enable_tls: wrap the listening socket in TLS
+    #
+
+    #
+    # Process command line
+    #
+    if len(sys.argv) < 3:
+        print("Error: not enough arguments. Both the server IP and port must be specified.")
+        print("For example: python3 -m catcher 127.0.0.1 8443")
+        sys.exit(1)
+    ip = sys.argv[1]
+    port = int(sys.argv[2])
+
+    #
+    # Execute, looping on input() until Ctrl-C
+    #
+    C = Catcher(host=ip, port=port)
+    C.start()
+    while True:
+        try:
+            input()
+        except KeyboardInterrupt:
+            print("Shutting down")
+            C.shutdown()
+            time.sleep(2)
+            break
+
+
+if __name__ == "__main__":
+    main()
 
