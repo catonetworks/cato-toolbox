@@ -12,7 +12,8 @@ import urllib.request
 
 def request(url, method="GET", headers={}, body=None):
 	#
-	# Make a web request.
+	# Make a web request. TLS validation is disabled as this is usually
+	# a requirement for Canister testing.
 	#
 	# Parameters:
 	# ----------
