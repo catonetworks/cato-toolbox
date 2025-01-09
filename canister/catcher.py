@@ -72,25 +72,17 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(f"{header}: {value}\n".encode())
 
 
-    """
     def do_POST(self):
-        # Respond with request headers and body
-        content_length = int(self.headers.get('Content-Length', 0))
-        request_body = self.rfile.read(content_length) if content_length > 0 else b""
-        
+        #
+        # Default POST: ignore body, send back the request headers.
+        #
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
         self.end_headers()
-        
-        # Write the request headers to the response
-        self.wfile.write(b"Request Headers:\n")
+        self.wfile.write(f'{self.requestline}\n'.encode())
         for header, value in self.headers.items():
             self.wfile.write(f"{header}: {value}\n".encode())
-        
-        # Write the request body to the response
-        self.wfile.write(b"\nRequest Body:\n")
-        self.wfile.write(request_body)
-    """
+
 
 
 class Catcher:
