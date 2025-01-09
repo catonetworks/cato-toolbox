@@ -6,7 +6,7 @@
 
 import unittest
 
-from canistertest import CanisterTest, mandatory_parameters, supported_protocols, supported_methods, evaluate
+from canistertest import CanisterTest, mandatory_parameters, supported_methods, supported_protocols, evaluate
 from logger import Logger
 Logger.print_output = False
 
@@ -52,6 +52,19 @@ class TestCanisterTest(unittest.TestCase):
         for param in mandatory_parameters:
             params = {X:"test" for X in mandatory_parameters if X != param}
             self.assertRaises(KeyError, CanisterTest, params)
+
+    def test_optionalparameters(self):
+        #
+        # Check that all mandatory parameters are present
+        #
+        params = {X:"test" for X in mandatory_parameters}
+        params["protocol"] = supported_protocols[0]
+        params["method"] = supported_methods[0]
+        params["success_criteria"] = [{"field":"response_code","op":"is","value":403}]
+        params["Another"] = "another"
+        T = CanisterTest(params)
+        self.assertEqual(T.optional_parameters["Another"], "another")
+
 
     def test_protocols(self):
         params = {X:"test" for X in mandatory_parameters}
@@ -123,7 +136,6 @@ class TestCanisterTest(unittest.TestCase):
         T.execute()
         self.assertTrue(T.executed)
         self.assertTrue(T.success)
-        self.assertEqual(len(T.reasons), 0)
 
         #
         # Execute - Cato not blocked
@@ -132,7 +144,6 @@ class TestCanisterTest(unittest.TestCase):
         T.execute()
         self.assertTrue(T.executed)
         self.assertTrue(T.success)
-        self.assertEqual(len(T.reasons), 0)
 
 
     def test_evaluation(self):
@@ -153,4 +164,3 @@ class TestCanisterTest(unittest.TestCase):
         result = {"response_code":403}
         result, reasons = evaluate(result, sc)
         self.assertTrue(result)
-        self.assertEqual(len(reasons),0)

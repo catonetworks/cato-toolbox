@@ -12,6 +12,12 @@ from logger import Logger
 Logger.print_output = False
 
 
+#
+# Full evaluation of the DEFAULT set requires a remote target with
+# properly configured controls in between. Get the value of this target
+# from an environment variable. Fall back to localhost if not set.
+#
+TARGET = os.environ.get("CANISTER_TEST_TARGET", "127.0.0.1")
 
 
 class TestSet(unittest.TestCase):
@@ -48,7 +54,7 @@ class TestSet(unittest.TestCase):
 
 
     def test_execute(self):
-        S = CanisterSet()
+        S = CanisterSet(target=TARGET)
         errors = S.load(DEFAULT)
         self.assertEqual(len(errors), 0)
         test_count = len(S)

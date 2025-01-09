@@ -4,6 +4,7 @@
 # Contains functions for making web requests
 #
 
+import json
 import ssl
 import urllib.parse
 import urllib.request

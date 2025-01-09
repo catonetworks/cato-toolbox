@@ -56,16 +56,15 @@ mandatory_parameters = [
 	#
 	# The conditions which must all be true for the test to succeed (i.e.
 	# the risky activity is controlled).
-	"success_criteria",
-	#
+	"success_criteria"
 ]
 
 
 #
-# Define the supported protocols and methods
+# Define the supported methods and protocols
 #
 supported_protocols = ["http", "https"]
-supported_methods = ["GET"]
+supported_methods = ["GET", "POST"]
 
 
 #
@@ -94,7 +93,7 @@ class CanisterTest:
 		# for execution. It should not be possible to have an instance
 		# of this class which cannot be evaluated.
 		#
-		
+
 		#
 		# Check for missing mandatory parameters.
 		#
@@ -105,12 +104,16 @@ class CanisterTest:
 		Logger.log(2, f'Test:{params["name"]} loading')
 
 		#
-		# Check protocols and methods
+		# Check protocols
 		#
 		if params["protocol"] not in supported_protocols:
 			error = f'Test:{params["name"]} unsupported protocol: {params["protocol"]}'
 			Logger.log(1, error)
 			raise ValueError(error)
+
+		#
+		# Check for supported methods
+		#
 		if params["method"] not in supported_methods:
 			error = f'Test:{params["name"]} unsupported method: {params["method"]}'
 			Logger.log(1, error)
@@ -144,7 +147,7 @@ class CanisterTest:
 				raise ValueError(error)
 
 		#
-		# Assign params
+		# Assign mandatory params
 		#
 		self.name = params["name"]
 		self.protocol = params["protocol"]
@@ -156,6 +159,15 @@ class CanisterTest:
 		self.path = params["path"]
 		self.port = params["port"]
 		self.success_criteria = params["success_criteria"]
+
+		#
+		# Optional params - 
+		#
+		self.optional_parameters = {key:value for key, value in params.items() if key not in mandatory_parameters}
+
+		#
+		# Flags
+		#
 		self.executed = False
 		self.success = None
 		self.reasons = None
@@ -189,6 +201,8 @@ class CanisterTest:
 			#
 			# Construct request
 			#
+			headers = self.optional_parameters.get("headers", {})
+			body = self.optional_parameters.get("body", None)
 			url = f'{self.protocol}://{self.host}:{self.port}{self.path}'
 			Logger.log(3, f'Test:{self.name} url={url}')
 
@@ -197,7 +211,9 @@ class CanisterTest:
 			#
 			response_code, response_reason, response_headers, response_body = request(
 				url,
-				self.method
+				method=self.method,
+				headers=headers,
+				body=body,
 			)
 			Logger.log(3, f'Test:{self.name} response_code={response_code}')
 			Logger.log(3, f'Test:{self.name} response_reason={response_reason}')
