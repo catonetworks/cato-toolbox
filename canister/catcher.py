@@ -50,6 +50,17 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(base64.b64decode(ngeicarb64))
 
         #
+        # Zipped EICAR
+        #
+        if self.path == "/eicar.zip":
+            zipfile = "UEsDBAoAAAAAADKs6yjRINsxuAAAALgAAAANAAAAZWljYXJfY29tLnppcFBLAwQKAAAAAADgmLgoPM9RaEQAAABEAAAACQAAAGVpY2FyLmNvbVg1TyFQJUBBUFs0XFBaWDU0KFBeKTdDQyk3fSRFSUNBUi1TVEFOREFSRC1BTlRJVklSVVMtVEVTVC1GSUxFISRIK0gqUEsBAhQACgAAAAAA4Ji4KDzPUWhEAAAARAAAAAkAAAAAAAAAAQAgAP+BAAAAAGVpY2FyLmNvbVBLBQYAAAAAAQABADcAAABrAAAAAABQSwECFAAKAAAAAAAyrOso0SDbMbgAAAC4AAAADQAAAAAAAAAAACAAtoEAAAAAZWljYXJfY29tLnppcFBLBQYAAAAAAQABADsAAADjAAAAAAA=="
+            self.send_response(200)
+            self.send_header("Content-Type", "application/octet-stream")
+            self.send_header("Content-Disposition", "attachment; filename=\"eicar.zip\"")
+            self.end_headers()
+            self.wfile.write(base64.b64decode(zipfile))
+
+        #
         # Default GET: ignore the body, only send back the request headers.
         #
         else:
