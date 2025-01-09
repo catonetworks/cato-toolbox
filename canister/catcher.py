@@ -38,6 +38,16 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(base64.b64decode(eicarb64))
 
+        #
+        # NG EICAR file
+        #
+        if self.path == "/ngeicar.exe":
+            ngeicarb64 = "xxx"
+            self.send_response(200)
+            self.send_header("Content-Type", "application/octet-stream")
+            self.send_header("Content-Disposition", "attachment; filename=\"ngeicar.exe\"")
+            self.end_headers()
+            self.wfile.write(base64.b64decode(ngeicarb64))
 
         #
         # Default GET: ignore the body, only send back the request headers.
