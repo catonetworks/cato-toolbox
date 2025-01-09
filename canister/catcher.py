@@ -42,7 +42,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
         # NG EICAR file
         #
         if self.path == "/ngeicar.exe":
-            ngeicarb64 = "xxx"
+            ngeicarb64 = "WDVPIVAlQEFQWzRcUFpYNTQoUF4pN0NDKTd9JEVJQ0FSLVNFTlRJTkVMLUFOVElWSVJVUy1URVNULUZJTEUhJEgrSCo="
             self.send_response(200)
             self.send_header("Content-Type", "application/octet-stream")
             self.send_header("Content-Disposition", "attachment; filename=\"ngeicar.exe\"")
