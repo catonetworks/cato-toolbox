@@ -128,6 +128,7 @@ class Catcher:
                 (self.host, self.port), 
                 RequestHandler
             )
+            self.httpd.timeout = 3
             if self.enable_ssl:
                 context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
                 context.load_cert_chain(self.certfile, self.keyfile)
