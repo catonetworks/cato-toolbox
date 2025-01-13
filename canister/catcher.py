@@ -29,7 +29,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         # Override base class to log via Canister logger rather than
         # print stuff to stdout.
         #
-        print(f, args)
+        text = f'{self.client_address[0]}:{self.client_address[1]} {f % args}'
+        Logger.log(1, text)
 
 
     def do_GET(self):
@@ -116,7 +117,6 @@ class Catcher:
         self.keyfile = keyfile
         self.enable_ssl = enable_ssl
         self.server_thread = None
-        Logger.print_output = False
 
 
     def start(self):
@@ -189,7 +189,7 @@ def main():
         try:
             input()
         except KeyboardInterrupt:
-            print("Shutting down")
+            Logger.log(1, "Received KeyboardInterrupt")
             C.shutdown()
             time.sleep(2)
             break
