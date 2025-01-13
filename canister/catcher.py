@@ -29,7 +29,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         # Override base class to log via Canister logger rather than
         # print stuff to stdout.
         #
-        text = f'{self.client_address[0]}:{self.client_address[1]} {f % args}'
+        text = f'tc:{threading.active_count()} {self.client_address[0]}:{self.client_address[1]} {f % args}'
         Logger.log(1, text)
 
 
