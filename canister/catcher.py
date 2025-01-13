@@ -124,19 +124,21 @@ class Catcher:
         # Starts the web service on a separate thread, running forever until killed or shutdown
         #
         def go():
-            with socketserver.TCPServer((self.host, self.port), RequestHandler) as self.httpd:
-                if self.enable_ssl:
-                    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-                    context.load_cert_chain(self.certfile, self.keyfile)
-                    self.httpd.socket = context.wrap_socket(
-                        self.httpd.socket,
-                        server_side=True
-                    )
-                    protocol = "https"
-                else:
-                    protocol = "http"
-                Logger.log(1, f"Thread: Server started at {protocol}://{self.host}:{self.port}")
-                self.httpd.serve_forever()
+            self.httpd = http.server.ThreadingHTTPServer(
+                (self.host, self.port), 
+                RequestHandler
+            )
+            if self.enable_ssl:
+                context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+                context.load_cert_chain(self.certfile, self.keyfile)
+                self.httpd.socket = context.wrap_socket(
+                    self.httpd.socket,
+                    server_side=True
+                )
+                protocol = "https"
+            else:
+                protocol = "http"
+            self.httpd.serve_forever()
             Logger.log(1, "Exiting server thread")
         self.server_thread = threading.Thread(target=go)
         self.server_thread.start()
