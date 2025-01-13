@@ -148,7 +148,7 @@ class Catcher:
 #
 # The main() function allows us to call this module from the command line
 # with no additional scripting required. The only parameters are the server
-# IP and port - when calling from the CLI we assume that TLs is required
+# IP and port - when calling from the CLI we assume that TLS is required
 # and that the TLS certificate will be the default. We also leave the log
 # level at the default.
 #
@@ -161,7 +161,6 @@ def main():
     #
     # server_ip: the local IP to listen on.
     # server_port: the port to listen on.
-    # enable_tls: wrap the listening socket in TLS
     #
 
     #
