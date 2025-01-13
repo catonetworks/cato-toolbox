@@ -18,11 +18,18 @@ from logger import Logger
 
 
 
-class RequestHandler(http.server.SimpleHTTPRequestHandler):
+class RequestHandler(http.server.BaseHTTPRequestHandler):
     #
     # Handle GET and POST requests by echoing back the request headers
     # and body in the response body.
     #
+
+    def log_message(self, f, *args):
+        #
+        # Override base class to log via Canister logger rather than
+        # print stuff to stdout.
+        #
+        print(f, args)
 
 
     def do_GET(self):
