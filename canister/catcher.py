@@ -123,24 +123,34 @@ class Catcher:
         #
         # Starts the web service on a separate thread, running forever until killed or shutdown
         #
+        # This is an extremely small, limited, primitive implementation of a web server.
+        # This should not be exposed to the Internet at large or used to serve other content.
+        #
         def go():
-            self.httpd = http.server.ThreadingHTTPServer(
-                (self.host, self.port), 
-                RequestHandler
-            )
-            self.httpd.request_queue_size = 100
-            self.httpd.timeout = 3
-            if self.enable_ssl:
-                context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-                context.load_cert_chain(self.certfile, self.keyfile)
-                self.httpd.socket = context.wrap_socket(
-                    self.httpd.socket,
-                    server_side=True
+            try:
+                self.httpd = http.server.ThreadingHTTPServer(
+                    (self.host, self.port), 
+                    RequestHandler
                 )
-                protocol = "https"
-            else:
-                protocol = "http"
-            self.httpd.serve_forever()
+                self.httpd.request_queue_size = 100
+                self.httpd.timeout = 3
+                if self.enable_ssl:
+                    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+                    context.load_cert_chain(self.certfile, self.keyfile)
+                    self.httpd.socket = context.wrap_socket(
+                        self.httpd.socket,
+                        server_side=True
+                    )
+                    protocol = "https"
+                else:
+                    protocol = "http"
+                self.httpd.serve_forever()
+            except PermissionError as e:
+                Logger.log(0, f"PermissionError:{e} - try using a port number > 1024")
+                sys.exit(1)
+            except Exception as e:
+                Logger.log(0, f"Exception:{e}")
+                sys.exit(1)
             Logger.log(1, "Exiting server thread")
         self.server_thread = threading.Thread(target=go)
         self.server_thread.start()
