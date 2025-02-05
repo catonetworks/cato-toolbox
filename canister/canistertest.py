@@ -183,7 +183,7 @@ class CanisterTest:
 		#
 		# The main test engine.
 		#
-		Logger.log(2, f'Test:{self.name} executing with {self.protocol}')
+		Logger.log(1, f'Test:{self.name} executing with {self.protocol}')
 
 
 		#
