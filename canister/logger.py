@@ -17,6 +17,7 @@
 
 
 import datetime
+import sys
 
 
 class Logger:
@@ -59,8 +60,18 @@ class Logger:
 		# text:		the text being logged.
 		# 
 		#
+
+		#
+		# Might have to run on some older Pythons, especially in AWS
+		#
+		major = sys.version_info[0]
+		minor = sys.version_info[1]
+		if major == 3 and minor < 10:
+			date_str = f'{datetime.datetime.utcnow()}'
+		else:
+			date_str = f'{datetime.datetime.now(datetime.UTC)}'
 		if level <= cls.level:
-			entry = f'LOG{level} {datetime.datetime.now(datetime.UTC)}> {text}'
+			entry = f'LOG{level} {date_str}> {text}'
 			cls.logs.append(entry)
 			cls.callback(level, text)
 			if cls.print_output:
