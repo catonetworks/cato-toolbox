@@ -9,6 +9,7 @@ from logger import Logger
 from canistertest import CanisterTest
 
 
+
 class CanisterSet:
 	#
 	# Defines a set of tests.
