@@ -52,5 +52,5 @@ S = canisterset.CanisterSet(target="10.2.1.251")
 S.load(canisterset.DEFAULT)
 S.execute()
 for T in S:
-	print(f'{T.name:<40} {T.success}')Peter-Lee-M:canister peterlee$ 
+	print(f'{T.name:<40} {T.success}')
 ```
