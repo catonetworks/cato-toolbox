@@ -52,8 +52,9 @@ catocli configure show
 ### Advanced Topics
 
 - [Common Patterns & Best Practices](./common-patterns.md) - Output formats, time frames, filtering patterns
-- [Script Library](./scripts/) - Ready-to-use automation scripts *(Coming Soon)*
-- [Integration Examples](./integrations/) - CI/CD, monitoring, and automation examples *(Coming Soon)*
+- [Python Integration - Windows](./python-integration-windows.md) - Windows-specific Python automation examples
+- [Python Integration - Unix/Linux/macOS](./python-integration-unix.md) - Unix-based Python integration guide
+- [SIEM Integration Guide](./siem-integration.md) - Real-time security event streaming to SIEM platforms
 
 ## Quick Start Examples
 
