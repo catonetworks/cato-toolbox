@@ -6,3 +6,5 @@ The Cato-Toolbox is a general purpose repository for custom packages, integratio
 
 1. [Caato CLI User Guide](https://github.com/Cato-Networks/cato-toolbox/tree/master/catocli_user_guide) - A comprehensive user guide on using the Cato Networks CLI (`catocli`) for various query operations and reporting tasks.
 
+1. [SDP Linux Container](sdp-linux-container) - A headless, containerized Cato SDP Linux client (Docker + Kubernetes) for putting any amd64 Linux host onto the Cato fabric without a Socket — cloud workloads, CI runners, jump hosts, NAS appliances. File-based secret handling, with an optional gateway mode to route a whole LAN through the tunnel.
+

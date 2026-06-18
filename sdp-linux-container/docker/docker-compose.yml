@@ -1,0 +1,67 @@
+# Cato SDP client container — user/password auth (headless / unattended).
+#
+# SAFETY: bridge networking ONLY. Do NOT set network_mode: host — the Cato daemon rewrites
+# the default route inside its network namespace; in bridge mode that stays contained to the
+# container, but with host networking it would hijack the Docker host's routing.
+#
+# Secret handling (file-based — NO external secret server required):
+#   * The PASSWORD is a Docker secret sourced from a local file (secrets/cato_password, gitignored).
+#     Compose mounts it read-only at /run/secrets/cato_password; the entrypoint reads it via
+#     CATO_PASSWORD_FILE — so the password is NEVER in the container environment (docker inspect /
+#     /proc/1/environ) and never in a committed file.
+#   * CATO_ACCOUNT / CATO_USER are non-secret identifiers, supplied from .env via interpolation.
+#   The password is still handed to the transient `cato-sdp start` call on argv, so it is visible
+#   to `ps` only momentarily during the connect handshake — that process exits after handing the
+#   credential to the cato-clientd daemon, which holds no credential on argv or in its environment.
+services:
+  cato-sdp:
+    build: .
+    image: cato-sdp-client:test
+    container_name: cato-sdp-client
+    # The Cato Linux client is amd64-only and does NOT work under ARM emulation. Pin to amd64
+    # so the build is always correct; deploy on a native amd64 Linux host (see DEPLOYMENT.md).
+    platform: linux/amd64
+    # on-failure (not unless-stopped): a hard daemon death restarts, but the entrypoint's own
+    # bounded backoff already absorbs auth failures, so we don't busy-loop the Cato controller.
+    restart: on-failure
+
+    # Tunnel plumbing + the three caps the client genuinely needs:
+    #   NET_ADMIN — build tun0, rewrite routes
+    #   NET_RAW   — daemon raw-socket probes
+    #   SYS_ADMIN — umount /etc/resolv.conf (Docker bind-mount) so the client's DNS rename works.
+    #               This is the cost of running a VPN client in a container; it stays bridge-scoped.
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_ADMIN
+    security_opt:
+      - no-new-privileges:true
+    devices:
+      - /dev/net/tun:/dev/net/tun
+
+    volumes:
+      # Persist daemon credentials/state so reconnects survive container restarts.
+      - cato-state:/opt/cato
+
+    environment:
+      # Non-secret identifiers (from .env via interpolation — safe in the environment).
+      CATO_ACCOUNT: ${CATO_ACCOUNT:?set CATO_ACCOUNT in .env}
+      CATO_USER: ${CATO_USER:?set CATO_USER in .env}
+      # Point the entrypoint at the mounted secret file — keeps the password OUT of the env.
+      CATO_PASSWORD_FILE: /run/secrets/cato_password
+
+    secrets:
+      - cato_password
+
+    # Tunnel state is sensitive; keep stdin/tty off.
+    stdin_open: false
+    tty: false
+
+secrets:
+  cato_password:
+    # Local file source — no external secret server needed. Gitignored; create it from
+    # secrets/cato_password.example (a single line: the password, no trailing newline needed).
+    file: ./secrets/cato_password
+
+volumes:
+  cato-state:

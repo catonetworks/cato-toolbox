@@ -1,0 +1,5 @@
+# Local credentials — never commit the real password file or .env (only the .example templates ship)
+.env
+*.env
+secrets/cato_password
+docker/secrets/cato_password
