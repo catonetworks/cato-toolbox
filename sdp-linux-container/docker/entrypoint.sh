@@ -29,8 +29,8 @@ set -euo pipefail
 
 log() { echo "[entrypoint] $*"; }
 
-: "${CATO_ACCOUNT:?CATO_ACCOUNT must be set (your Cato account name)}"
-: "${CATO_USER:?CATO_USER must be set (e.g. user@example.com)}"
+: "${CATO_ACCOUNT:?CATO_ACCOUNT is not set — copy docker/.env.example to docker/.env and set your Cato account name (see DEPLOYMENT.md Step 2)}"
+: "${CATO_USER:?CATO_USER is not set — set it in docker/.env (e.g. user@example.com)}"
 
 # Resolve the password. PREFER a file (a Docker/Kubernetes secret mounted at a path) over a plain
 # env var, so the secret never enters the container environment (docker inspect / /proc/1/environ).
@@ -52,7 +52,7 @@ if [[ -n "${CATO_PASSWORD_FILE:-}" ]]; then
   CATO_PASSWORD="$(< "$CATO_PASSWORD_FILE")"
   [[ -n "$CATO_PASSWORD" ]] || { log "ERROR: CATO_PASSWORD_FILE=$CATO_PASSWORD_FILE is empty." >&2; exit 1; }
 fi
-: "${CATO_PASSWORD:?set CATO_PASSWORD_FILE (preferred) or CATO_PASSWORD — password-activated, non-OAuth account}"
+: "${CATO_PASSWORD:?No password — create docker/secrets/cato_password (the compose secret mounts it at CATO_PASSWORD_FILE), or set CATO_PASSWORD directly. Use a password-activated, non-OAuth account.}"
 # Keep the password a shell-local variable only — never let child processes inherit it via the
 # environment (it is handed to cato-sdp on argv, not through the environment).
 export -n CATO_PASSWORD 2>/dev/null || true

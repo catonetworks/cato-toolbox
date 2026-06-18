@@ -44,9 +44,13 @@ services:
       - cato-state:/opt/cato
 
     environment:
-      # Non-secret identifiers (from .env via interpolation — safe in the environment).
-      CATO_ACCOUNT: ${CATO_ACCOUNT:?set CATO_ACCOUNT in .env}
-      CATO_USER: ${CATO_USER:?set CATO_USER in .env}
+      # Non-secret identifiers (from .env via interpolation — safe in the environment). Deliberately
+      # NOT required at build time (`:-` default, not `:?`) so `docker compose build` works before
+      # .env exists — the image needs no credentials to build. The entrypoint validates them at
+      # startup, so a missing/empty value still fails fast with a clear message (see DEPLOYMENT.md
+      # Step 2: create .env before `up`).
+      CATO_ACCOUNT: ${CATO_ACCOUNT:-}
+      CATO_USER: ${CATO_USER:-}
       # Point the entrypoint at the mounted secret file — keeps the password OUT of the env.
       CATO_PASSWORD_FILE: /run/secrets/cato_password
 
