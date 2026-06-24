@@ -212,6 +212,7 @@ Required behavior:
 - If the stored state `timeFrame` differs from the requested `-T`, reset marker to `""` and reset deduplication state.
 - If `-m` is supplied, use it as the starting marker and reset deduplication state, because this is manual repositioning.
 - Do not attempt to manually calculate or mutate Cato markers.
+- If the response marker equals the marker that was just sent while `hasMore` is true, treat the feed as stuck and stop, because continuing would refetch the same records (all deduplicated to nothing) forever. See Termination Guarantees.
 
 ## Polling Sequence
 
@@ -226,7 +227,7 @@ For a single run:
 7. Emit only new records to configured outputs.
 8. Persist state with the response marker and updated `seenHashes`.
 9. If `hasMore` is true, repeat from step 3 using the newly persisted marker.
-10. Stop when `hasMore` is false, or when configured fetch/runtime stop conditions are reached.
+10. Stop when `hasMore` is false, when the marker did not advance, or when a configured fetch/runtime stop condition is reached. See Termination Guarantees.
 
 Important invariant:
 
@@ -304,6 +305,7 @@ Required retry behavior:
 - Honor `Retry-After` when present.
 - Use exponential backoff when `Retry-After` is absent.
 - Cap backoff at 30 seconds.
+- Treat in-body rate-limit responses (HTTP 200 whose payload is a rate-limit error) as retryable, and count every such retry against the same bounded retry budget as transport errors. A retry path that sleeps and continues without incrementing the retry counter is a defect, because the bound can never be reached and the script spins forever.
 - Stop after a bounded retry count and exit with a nonzero status.
 
 Required failure behavior:
@@ -311,6 +313,21 @@ Required failure behavior:
 - If the Cato API returns GraphQL `errors`, do not advance the marker.
 - If output to a configured destination fails, do not advance the marker.
 - Error messages must not expose secrets.
+
+## Termination Guarantees
+
+The script must always make progress or stop. Every retry or polling loop must have a bound that is guaranteed to be reached.
+
+Required behavior:
+
+- Every retry loop must increment a retry counter on every retry path (transport errors, HTTP error status, and in-body rate-limit responses) and must exit once the bound is exceeded.
+- The pagination loop must stop when the response marker equals the marker just sent while `hasMore` is true (no-progress guard), so a stuck or misbehaving feed cannot loop forever.
+- The pagination loop must also stop on the existing conditions: `hasMore` is false, fetched count below the fetch threshold, or runtime limit exceeded.
+- Any network output (TCP stream, Sentinel) must use a bounded socket or request timeout so a hung receiver cannot block the run indefinitely. The canonical timeout is 30 seconds, matching the GraphQL request timeout.
+
+Rationale:
+
+- A retry path that does not increment the counter, or a pagination loop with no no-progress guard, can run forever and is treated as a defect.
 
 ## Logging
 
@@ -373,6 +390,22 @@ Debug logging must not include:
 - Then each output receives only deduplicated new records.
 - If any configured output fails, the marker is not advanced.
 
+### Bounded in-body rate-limit retries
+
+- Given the API repeatedly returns an HTTP 200 in-body rate-limit error.
+- Then each retry increments the retry counter.
+- And the script exits with a nonzero status once the retry bound is exceeded, rather than looping forever.
+
+### No-progress pagination stop
+
+- Given a response with `hasMore: true` and a marker equal to the marker just sent.
+- Then the script stops the pagination loop instead of issuing another identical request.
+
+### Bounded network output
+
+- Given `-n` is configured and the receiver accepts the connection but never reads.
+- Then the send is bounded by a socket timeout and the run does not block indefinitely.
+
 ## Implementation Checklist
 
 - [ ] Use parameterized GraphQL query and variables.
@@ -389,6 +422,9 @@ Debug logging must not include:
 - [ ] Persist marker and updated `seenHashes` only after output succeeds.
 - [ ] Bound `seenHashes` to `MAX_SEEN_HASHES`.
 - [ ] Retry transient API errors with `Retry-After` or exponential backoff.
+- [ ] Increment the retry counter on every retry path, including in-body rate-limit responses, so the retry bound is always reachable.
+- [ ] Stop pagination when the marker does not advance while `hasMore` is true.
+- [ ] Set a bounded socket/request timeout on all network output.
 - [ ] Keep secrets out of code, logs, and state.
 - [ ] Add tests or simulation for boundary duplicate and mixed duplicate/new pages.
 

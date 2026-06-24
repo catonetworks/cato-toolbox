@@ -198,8 +198,12 @@ def send(query, variables):
             result_data = response_data
         total_bytes_uncompressed += len(result_data)
         if result_data[:48] == b'{"errors":[{"message":"rate limit for operation:':
-            log("RATE LIMIT sleeping 5 seconds then retrying")
+            # in-body rate limit (HTTP 200 with an error payload): count it
+            # against the retry budget so the retry_count guard can fire instead
+            # of spinning forever if the server keeps returning this error
+            log(f"RATE LIMIT (attempt {retry_count}) sleeping 5 seconds then retrying")
             time.sleep(5)
+            retry_count += 1
             continue
         break
     result = json.loads(result_data.decode('utf-8', 'replace'))
@@ -488,6 +492,7 @@ else:
 iteration = 1
 total_count = 0
 while True:
+    sent_marker = marker
     variables = build_variables(marker, audit_filters)
 
     logd(GRAPHQL_QUERY)
@@ -556,6 +561,8 @@ while True:
     if args.stream_events is not None:
         logd(f"Sending audit records to {network_elements[0]}:{network_elements[1]}")
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            # bound connect/send so a hung receiver cannot block the run forever
+            s.settimeout(30)
             s.connect((network_elements[0], int(network_elements[1])))
             for audit_record in audit_list:
                 s.sendall(json.dumps(audit_record, ensure_ascii=False).encode("utf-8"))
@@ -589,6 +596,12 @@ while True:
     iteration += 1
     if not has_more:
         log("No more audit records available, stopping")
+        break
+    # guard against a stuck feed: if the marker did not advance but the API
+    # still reports hasMore, paginating again would just refetch the same
+    # records (all deduplicated to nothing) forever, so stop here
+    if marker == sent_marker:
+        log(f"Marker did not advance ({marker!r}) while hasMore is true, stopping to avoid an infinite loop")
         break
     if fetched_count < FETCH_THRESHOLD:
         log(f"Fetched count {fetched_count} less than threshold {FETCH_THRESHOLD}, stopping")
